@@ -22,6 +22,16 @@ health_font = pygame.font.SysFont('consolas, couriernew, monospace', 30)
 winner_font = pygame.font.SysFont('Times New Roman', 60)
 
 fps = 60
+clock = pygame.time.Clock()
+
+'''
+bullet Class()
+'''
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        super().__init__()
+        self.image = pygame.Surface((12,6))
+        self.image.fill("red")
 
 '''
 player Class()
@@ -39,14 +49,25 @@ class Player(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()
 
     def movement(self, keys):
-        if keys[self.conrols['left']]:
+        if keys[self.controls['left']]:
             self.rect.x = self.rect.x - player_speed
-        if keys[self.conrols['right']]:
+        if keys[self.controls['right']]:
              self.rect.x = self.rect.x + player_speed
-        if keys[self.conrols['up']]:
+        if keys[self.controls['up']]:
              self.rect.y = self.rect.y - player_speed
-        if keys[self.conrols['down']]:
+        if keys[self.controls['down']]:
              self.rect.y = self.rect.y + player_speed
+
+        #Setting boundaries
+        #Setting top and bottom boundaries for both players
+        self.rect.top = max(0, self.rect.top)
+        self.rect.bottom = min(HEIGHT, self.rect.bottom)
+        if self.side == 'left':
+            self.rect.left = max(0, self.rect.left)
+            self.rect.right = min(divider.left, self.rect.right)
+        else:
+            self.rect.left = max(divider.right, self.rect.left)
+            self.rect.right = min(WIDTH, self.rect.right)
 
 player_1 = Player(100, 200, 'assets/soldier_left.png', 
                   {'left': pygame.K_a, 'right': pygame.K_d, 'up': pygame.K_w, 'down': pygame.K_s}, "left")
@@ -62,6 +83,14 @@ def display():
     screen.fill('blue')
     screen.blit(bg_image, (0,0))
 
+    #Applying font on text using render function. This function does not display the text
+    player_1_text = health_font.render(f'Player 1: {player_1.health}', True, 'green')
+    #Displaying text on screen
+    screen.blit(player_1_text, (30,30))
+
+    player_2_text = health_font.render(f'Player 2: {player_2.health}', True, 'green')
+    screen.blit(player_2_text, (950, 30))
+
     #displaying both the players on the screen
     players.draw(screen)
 
@@ -71,12 +100,22 @@ def display():
     pygame.display.update()
 
 def main():
-    while True:
+    is_running = True
+    while is_running:
+        clock.tick(fps)
         display()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit(0)
+                is_running = False
+
+        #Getting all the keys pressed
+        keys = pygame.key.get_pressed()
+
+        #Calling move function for the players
+        player_1.movement(keys)
+        player_2.movement(keys)
     
 
     pygame.quit()
