@@ -32,6 +32,14 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.Surface((12,6))
         self.image.fill("red")
+        self.rect = self.image.get_rect(center = (x,y))
+        self.direction = direction
+
+    def update(self):
+        self.rect.x += bullet_speed * self.direction
+        if self.rect.right < 0 or self.rect.left > WIDTH:
+            self.kill() 
+
 
 '''
 player Class()
@@ -47,6 +55,21 @@ class Player(pygame.sprite.Sprite):
         self.side = side
         self.health = 100
         self.bullets = pygame.sprite.Group()
+
+
+    def shoot(self):
+        if len(self.bullets) >= max_bullets:
+            return
+        if self.side == 'left':
+            bullet = Bullet(self.rect.right, self.rect.centery, 1)
+        else:
+            bullet = Bullet(self.rect.left, self.rect.centery, -1)
+        self.bullets.add(bullet)
+
+
+    def update(self):
+        self.bullets.update()
+
 
     def movement(self, keys):
         if keys[self.controls['left']]:
@@ -79,6 +102,18 @@ players = pygame.sprite.Group()
 players.add(player_1, player_2)
 
 
+def check_collision():
+    for bullet in player_1.bullets:
+        if bullet.rect.colliderect(player_2.rect):
+            player_2.health -= 10
+            bullet.kill()
+
+    for bullet in player_2.bullets:
+        if bullet.rect.colliderect(player_1.rect):
+            player_1.health -= 10
+            bullet.kill()
+
+
 def display():
     screen.fill('blue')
     screen.blit(bg_image, (0,0))
@@ -96,6 +131,10 @@ def display():
 
     #displaying divider on the screen
     pygame.draw.rect(screen, 'black', divider)
+
+    #displaying bullets
+    player_1.bullets.draw(screen)
+    player_2.bullets.draw(screen)
     
     pygame.display.update()
 
@@ -110,14 +149,27 @@ def main():
                 exit(0)
                 is_running = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LSHIFT:
+                    player_1.shoot()
+                if event.key == pygame.K_RSHIFT:
+                    player_2.shoot()
+
+        #calling update function of the player class
+        players.update()
+        check_collision()
+
+        #Condition for game end
+        if player_1.health <= 0:
+            print('PLAYER 2 WINS!')
+            break
+        if player_2.health <= 0:
+            print('PLAYER 1 WINS!')
+            break
+
         #Getting all the keys pressed
         keys = pygame.key.get_pressed()
 
         #Calling move function for the players
         player_1.movement(keys)
         player_2.movement(keys)
-    
-
-    pygame.quit()
-
-main()
