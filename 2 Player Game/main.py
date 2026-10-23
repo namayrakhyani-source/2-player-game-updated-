@@ -138,6 +138,15 @@ def display():
     
     pygame.display.update()
 
+
+def show_winner(text):
+    screen.fill('blue')
+    winner_text = winner_font.render(text, True, 'black')
+    screen.blit(winner_text, (WIDTH//2 - winner_text.get_width()//2, HEIGHT//2 - winner_text.get_height()//2))
+    pygame.display.update()
+    pygame.time.delay(3000)
+
+
 def main():
     is_running = True
     while is_running:
@@ -162,9 +171,11 @@ def main():
         #Condition for game end
         if player_1.health <= 0:
             print('PLAYER 2 WINS!')
+            show_winner("PLAYER 2 WINS!")
             break
         if player_2.health <= 0:
             print('PLAYER 1 WINS!')
+            show_winner("PLAYER 1 WINS!")
             break
 
         #Getting all the keys pressed
@@ -173,3 +184,8 @@ def main():
         #Calling move function for the players
         player_1.movement(keys)
         player_2.movement(keys)
+    
+
+    pygame.quit()
+
+main()
